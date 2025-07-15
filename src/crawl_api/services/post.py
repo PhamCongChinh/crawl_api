@@ -1,0 +1,60 @@
+from fastapi import HTTPException
+from pydantic import ValidationError
+from pymongo import UpdateOne
+from crawl_api.models.post import PostModel
+from src.core.mongo import db
+
+class PostService():
+    @staticmethod
+    async def insert_posts(items: list[dict]):
+        operations = []
+        for item in items:
+            try:
+                post = PostModel(**item)  # validate với Pydantic
+                print("✅ Dữ liệu hợp lệ:", post.model_dump().get("url"))
+                data = post.model_dump(exclude_none=True)
+                operations.append(
+                    UpdateOne(
+                        {"url": post.url},      # dùng luôn field đã được validate
+                        {"$set": data},
+                        upsert=True
+                    )
+                )
+            except ValidationError as e:
+                print("Bỏ qua item không hợp lệ:")
+                print(e.json(indent=2))
+        if operations:
+            result = await db["tiktok_temp_classified"].bulk_write(operations, ordered=False)
+            return {
+                "matched": result.matched_count,
+                "modified": result.modified_count,
+                "upserted": len(result.upserted_ids),
+            }
+        return {"msg": "No valid operations"}
+
+    @staticmethod
+    async def insert_unclassified_org_posts(items: list[dict]):
+        operations = []
+        for item in items:
+            try:
+                post = PostModel(**item)  # validate với Pydantic
+                print("✅ Dữ liệu hợp lệ:", post.model_dump().get("url"))
+                data = post.model_dump(exclude={"id", "org_id", "isPriority"},exclude_none=True)
+                operations.append(
+                    UpdateOne(
+                        {"url": post.url},      # dùng luôn field đã được validate
+                        {"$set": data},
+                        upsert=True
+                    )
+                )
+            except ValidationError as e:
+                print("Bỏ qua item không hợp lệ:")
+                print(e.json(indent=2))
+        if operations:
+            result = await db["tiktok_temp_unclassified"].bulk_write(operations, ordered=False)
+            return {
+                "matched": result.matched_count,
+                "modified": result.modified_count,
+                "upserted": len(result.upserted_ids),
+            }
+        return {"msg": "No valid operations"}

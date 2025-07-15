@@ -5,7 +5,7 @@ StringStrip500 = Annotated[str, Field(strip_whitespace=True, min_length=1, max_l
 StringStrip255 = Annotated[str, Field(strip_whitespace=True, max_length=255)]
 StringContent3000 = Annotated[str, Field(strip_whitespace=True)]
 
-class PostModel(BaseModel):
+class PostClassifiedModel(BaseModel):
     id: Optional[StringStrip500] = None
     doc_type: int = Field(default=1)
     crawl_source: int

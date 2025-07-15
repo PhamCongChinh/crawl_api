@@ -1,7 +1,8 @@
 from fastapi import HTTPException
 from pydantic import ValidationError
 from pymongo import UpdateOne
-from crawl_api.models.post import PostModel
+from crawl_api.models.post_classified import PostClassifiedModel
+from crawl_api.models.post_unclassified import PostUnclassifiedModel
 from src.core.mongo import db
 
 class PostService():
@@ -10,7 +11,7 @@ class PostService():
         operations = []
         for item in items:
             try:
-                post = PostModel(**item)  # validate với Pydantic
+                post = PostClassifiedModel(**item)  # validate với Pydantic
                 print("✅ Dữ liệu hợp lệ:", post.model_dump().get("url"))
                 data = post.model_dump(exclude_none=True)
                 operations.append(
@@ -24,7 +25,7 @@ class PostService():
                 print("Bỏ qua item không hợp lệ:")
                 print(e.json(indent=2))
         if operations:
-            result = await db["tiktok_temp_classified"].bulk_write(operations, ordered=False)
+            result = await db["data_classified"].bulk_write(operations, ordered=False)
             return {
                 "matched": result.matched_count,
                 "modified": result.modified_count,
@@ -37,9 +38,9 @@ class PostService():
         operations = []
         for item in items:
             try:
-                post = PostModel(**item)  # validate với Pydantic
+                post = PostUnclassifiedModel(**item)  # validate với Pydantic
                 print("✅ Dữ liệu hợp lệ:", post.model_dump().get("url"))
-                data = post.model_dump(exclude={"id", "org_id", "isPriority"},exclude_none=True)
+                data = post.model_dump(exclude_none=True)
                 operations.append(
                     UpdateOne(
                         {"url": post.url},      # dùng luôn field đã được validate
@@ -51,7 +52,7 @@ class PostService():
                 print("Bỏ qua item không hợp lệ:")
                 print(e.json(indent=2))
         if operations:
-            result = await db["tiktok_temp_unclassified"].bulk_write(operations, ordered=False)
+            result = await db["data_unclassified"].bulk_write(operations, ordered=False)
             return {
                 "matched": result.matched_count,
                 "modified": result.modified_count,

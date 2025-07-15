@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 from pathlib import Path
 
 class Settings(BaseSettings):
-    APP_HOST: str = "127.0.0.1"
+    APP_HOST: str = "localhost"
     APP_PORT: int = 8000
     DEBUG: bool = False
 

@@ -7,13 +7,13 @@ from src.core.mongo import db
 
 class PostService():
     @staticmethod
-    async def insert_posts(items: list[dict]):
+    async def insert_posts(items: dict):
         operations = []
-        for item in items:
+        for item in items.get("data"):
             try:
                 post = PostClassifiedModel(**item)  # validate với Pydantic
                 print("✅ Dữ liệu hợp lệ:", post.model_dump().get("url"))
-                data = post.model_dump(exclude_none=True)
+                data = post.model_dump()
                 operations.append(
                     UpdateOne(
                         {"url": post.url},      # dùng luôn field đã được validate
@@ -34,13 +34,13 @@ class PostService():
         return {"msg": "No valid operations"}
 
     @staticmethod
-    async def insert_unclassified_org_posts(items: list[dict]):
+    async def insert_unclassified_org_posts(items: dict):
         operations = []
-        for item in items:
+        for item in items.get("data"):
             try:
                 post = PostUnclassifiedModel(**item)  # validate với Pydantic
                 print("✅ Dữ liệu hợp lệ:", post.model_dump().get("url"))
-                data = post.model_dump(exclude_none=True)
+                data = post.model_dump()
                 operations.append(
                     UpdateOne(
                         {"url": post.url},      # dùng luôn field đã được validate

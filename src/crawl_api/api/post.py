@@ -17,13 +17,13 @@ def serialize_doc(doc: dict):
     return doc
 
 @router.post("/insert-posts")
-async def insert_posts(request: list[dict]):
+async def insert_posts(request: dict):
     return await PostService.insert_posts(items=request)
     # bg_tasks.add_task(PostService.insert_posts, request)
     # return {"message": "Upsert task đã gửi đi"}
 
 @router.post("/insert-unclassified-org-posts")
-async def insert_posts(request: list[dict]):
+async def insert_posts(request: dict):
     return await PostService.insert_unclassified_org_posts(items=request)
     # bg_tasks.add_task(PostService.insert_unclassified_org_posts, request)
     # return {"message": "Upsert task đã gửi đi"}

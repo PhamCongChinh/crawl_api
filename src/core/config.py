@@ -9,6 +9,10 @@ class Settings(BaseSettings):
     MONGO_URI: str = "mongodb://localhost:27017"
     MONGO_DB: str = "mydb"
 
+    #KAFKA
+    KAFKA_BROKER_HOST: str = "localhost"
+    KAFKA_BROKER_PORT: int = 9092
+
     model_config = {
         "env_file": ".env"
     }

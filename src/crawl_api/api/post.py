@@ -1,7 +1,7 @@
 from fastapi import APIRouter, BackgroundTasks, Body, HTTPException, status
 from fastapi.responses import JSONResponse
 from crawl_api.services.post import PostService
-from kafka.kafka_producer import send_kafka_message
+from src.kafka.kafka_producer import send_kafka_message
 from src.core.mongo import db
 
 router = APIRouter(prefix="/api/v1/posts", tags=["Post"])

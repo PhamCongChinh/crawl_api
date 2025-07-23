@@ -18,24 +18,27 @@ def serialize_doc(doc: dict):
     return doc
 
 @router.post("/insert-posts")
-async def insert_posts(request: dict): # data là 1 list dict
+async def insert_posts_classified(request: dict): # data là 1 list dict
     try:
+        await PostService.insert_posts(items=request)
         data = request.get("data", [])
-        await send_kafka_message("data_classified", data)
+        await send_kafka_message("topic_data_classified", data)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
+    
     # return await PostService.insert_posts(items=request)
     # bg_tasks.add_task(PostService.insert_posts, request)
-    # return {"message": "Upsert task đã gửi đi"}
+    return {"message": "Upsert task đã gửi đi"}
 
 @router.post("/insert-unclassified-org-posts")
-async def insert_posts(request: dict):
+async def insert_posts_unclassified(request: dict):
     try:
+        await PostService.insert_unclassified_org_posts(items=request)
         data = request.get("data", [])
-        await send_kafka_message("data_unclassified", data)
+        await send_kafka_message("topic_data_unclassified", data)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
     # return await PostService.insert_unclassified_org_posts(items=request)
     # bg_tasks.add_task(PostService.insert_unclassified_org_posts, request)
-    # return {"message": "Upsert task đã gửi đi"}
+    return {"message": "Upsert task đã gửi đi"}

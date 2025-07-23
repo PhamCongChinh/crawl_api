@@ -49,8 +49,8 @@ async def create_kafka_topic(topic_name: str):
 
     try:
         admin_client.create_topics([topic])
-        print(f"✅ Created topic: {topic_name}")
+        print(f"Created topic: {topic_name}")
     except Exception as e:
-        print(f"⚠️ Topic '{topic_name}' may already exist or failed: {e}")
+        print(f"Topic '{topic_name}' may already exist or failed: {e}")
     finally:
         admin_client.close()

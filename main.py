@@ -7,11 +7,11 @@ from src.crawl_api.api import router_post
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await create_kafka_topic("topic_data_classified")
-    await create_kafka_topic("topic_data_unclassified")
-    await start_producer()
+    # await create_kafka_topic("topic_data_classified")
+    # await create_kafka_topic("topic_data_unclassified")
+    # await start_producer()
     yield
-    await stop_producer()
+    # await stop_producer()
 
 app = FastAPI(lifespan=lifespan)
 

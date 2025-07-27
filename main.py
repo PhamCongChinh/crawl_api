@@ -1,19 +1,16 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 import uvicorn
-from src.kafka.kafka_producer import create_kafka_topic, start_producer, stop_producer
 from src.core.config import settings
 from src.crawl_api.api import router_post
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # await create_kafka_topic("topic_data_classified")
-    # await create_kafka_topic("topic_data_unclassified")
-    # await start_producer()
-    yield
-    # await stop_producer()
+# @asynccontextmanager
+# async def lifespan(app: FastAPI):
+#     yield
 
-app = FastAPI(lifespan=lifespan)
+# app = FastAPI(lifespan=lifespan)
+
+app = FastAPI()
 
 app.include_router(router_post)
 

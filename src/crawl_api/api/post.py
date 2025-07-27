@@ -1,7 +1,7 @@
 from fastapi import APIRouter, BackgroundTasks, Body, HTTPException, status
-from fastapi.responses import JSONResponse
 from crawl_api.services.post import PostService
-from src.kafka.kafka_producer import send_kafka_message
+from src.kafka.message import MessagePayload
+from src.kafka.service import create_topic_if_not_exists
 from src.core.mongo import db
 
 router = APIRouter(prefix="/api/v1/posts", tags=["Post"])
@@ -22,10 +22,9 @@ async def insert_posts_classified(request: dict): # data là 1 list dict
     try:
         await PostService.insert_posts(items=request)
         # data = request.get("data", [])
-        # await send_kafka_message("topic_data_classified", data)
+        # await send_kafka_message("data-classified", data)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
     # return await PostService.insert_posts(items=request)
     # bg_tasks.add_task(PostService.insert_posts, request)
     return {"message": "Upsert task đã gửi đi"}
@@ -35,10 +34,17 @@ async def insert_posts_unclassified(request: dict):
     try:
         await PostService.insert_unclassified_org_posts(items=request)
         # data = request.get("data", [])
-        # await send_kafka_message("topic_data_unclassified", data)
+        # await send_kafka_message("data-unclassified", data)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
     # return await PostService.insert_unclassified_org_posts(items=request)
     # bg_tasks.add_task(PostService.insert_unclassified_org_posts, request)
     return {"message": "Upsert task đã gửi đi"}
+
+
+@router.post("/send")
+def send_to_kafka(data: MessagePayload):
+    create_topic_if_not_exists(data.topic)  # <-- kiểm tra & tạo topic
+    # producer.produce(data.topic, data.message.encode('utf-8'))
+    # producer.flush()
+    return {"status": "OK", "detail": f"Sent to topic '{data.topic}'"}

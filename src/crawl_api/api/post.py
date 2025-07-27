@@ -1,8 +1,15 @@
+import json
 from fastapi import APIRouter, BackgroundTasks, Body, HTTPException, status
 from crawl_api.services.post import PostService
 from src.kafka.message import MessagePayload
 from src.kafka.service import create_topic_if_not_exists
 from src.core.mongo import db
+from confluent_kafka import Producer
+from src.core.config import settings
+
+producer = Producer({
+    'bootstrap.servers': f"{settings.KAFKA_BROKER_HOST}:{settings.KAFKA_BROKER_PORT}"
+})
 
 router = APIRouter(prefix="/api/v1/posts", tags=["Post"])
 
@@ -43,8 +50,16 @@ async def insert_posts_unclassified(request: dict):
 
 
 @router.post("/send")
-def send_to_kafka(data: MessagePayload):
-    create_topic_if_not_exists(data.topic)  # <-- kiểm tra & tạo topic
+def send_to_kafka(request: dict): #data: MessagePayload
+    # create_topic_if_not_exists(data.topic)  # <-- kiểm tra & tạo topic
+    topic = "data-classified"
+    data = request.get("data", [])
+    for item in data:
+        producer.produce(
+            topic=topic,
+            value=json.dumps(item).encode('utf-8')
+        )
+
     # producer.produce(data.topic, data.message.encode('utf-8'))
-    # producer.flush()
-    return {"status": "OK", "detail": f"Sent to topic '{data.topic}'"}
+    producer.flush()
+    return {"status": "OK", "detail": f"Sent to topic '{topic}'"}

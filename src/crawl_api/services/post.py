@@ -4,6 +4,7 @@ from pymongo import UpdateOne
 from crawl_api.models.post_classified import PostClassifiedModel
 from crawl_api.models.post_unclassified import PostUnclassifiedModel
 from src.core.mongo import db
+import logging
 
 class PostService():
     @staticmethod
@@ -12,7 +13,7 @@ class PostService():
         for item in items.get("data"):
             try:
                 post = PostClassifiedModel(**item)  # validate với Pydantic
-                print("✅ Dữ liệu hợp lệ:", post.model_dump().get("url"))
+                logging.info("Dữ liệu hợp lệ:", post.model_dump().get("url"))
                 data = post.model_dump()
                 operations.append(
                     UpdateOne(
@@ -22,8 +23,8 @@ class PostService():
                     )
                 )
             except ValidationError as e:
-                print("Bỏ qua item không hợp lệ:")
-                print(e.json(indent=2))
+                logging.error("Bỏ qua item không hợp lệ:")
+                logging.error(e.json(indent=2))
         if operations:
             result = await db["data_classified"].bulk_write(operations, ordered=False)
             return {
@@ -39,7 +40,7 @@ class PostService():
         for item in items.get("data"):
             try:
                 post = PostUnclassifiedModel(**item)  # validate với Pydantic
-                print("✅ Dữ liệu hợp lệ:", post.model_dump().get("url"))
+                logging.info("Dữ liệu hợp lệ:", post.model_dump().get("url"))
                 data = post.model_dump()
                 operations.append(
                     UpdateOne(
@@ -49,8 +50,8 @@ class PostService():
                     )
                 )
             except ValidationError as e:
-                print("Bỏ qua item không hợp lệ:")
-                print(e.json(indent=2))
+                logging.error("Bỏ qua item không hợp lệ:")
+                logging.error(e.json(indent=2))
         if operations:
             result = await db["data_unclassified"].bulk_write(operations, ordered=False)
             return {

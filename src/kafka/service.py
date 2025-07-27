@@ -23,9 +23,9 @@ def create_topic_if_not_exists(topic_name: str):
 
     try:
         fs[topic_name].result()  # chờ topic tạo xong
-        print(f"✅ Đã tạo topic: {topic_name}")
+        logging.info(f"Đã tạo topic: {topic_name}")
     except Exception as e:
         if "TopicAlreadyExistsError" in str(e):
             pass  # nếu vừa có thằng khác tạo thì bỏ qua lỗi này
         else:
-            raise Exception(f"❌ Lỗi khi tạo topic '{topic_name}': {e}")
+            raise Exception(f"Lỗi khi tạo topic '{topic_name}': {e}")

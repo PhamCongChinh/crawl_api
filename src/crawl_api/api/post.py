@@ -27,51 +27,56 @@ def serialize_doc(doc: dict):
 @router.post("/insert-posts")
 async def insert_posts_classified(request: dict): # data là 1 list dict
     try:
-        result = await PostService.insert_posts(items=request)
-        print(result)
-        topic = "data-classified"
-        create_topic_if_not_exists(topic)
-        data = request.get("data", [])
-        for item in data:
-            producer.produce(
-                topic=topic,
-                value=json.dumps(item).encode('utf-8'),
-                callback=delivery_report
-            )
+        if (request.get("data")):
+            result = await PostService.insert_posts(items=request)
+            print(result)
+            topic = "data-classified"
+            create_topic_if_not_exists(topic)
+            data = request.get("data", [])
+            for item in data:
+                producer.produce(
+                    topic=topic,
+                    value=json.dumps(item).encode('utf-8'),
+                    callback=delivery_report
+                )
 
-        producer.flush()
-        return {"status": "OK", "detail": f"Sent to topic '{topic}'"}
+            producer.flush()
+            return {"status": "OK", "detail": f"Sent to topic '{topic}'"}
+        else:
+            print("Không có dữ liệu truyền vào")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    # return {"message": "Upsert task đã gửi đi"}
 
 @router.post("/insert-unclassified-org-posts")
 async def insert_posts_unclassified(request: dict):
     try:
-        await PostService.insert_unclassified_org_posts(items=request)
-        topic = "data-unclassified"
-        create_topic_if_not_exists(topic)  # <-- kiểm tra & tạo topic
-    
-        data = request.get("data", [])
-        for item in data:
-            producer.produce(
-                topic=topic,
-                value=json.dumps(item).encode('utf-8'),
-                callback=delivery_report
-            )
+        if (request.get("data")):
+            result = await PostService.insert_unclassified_org_posts(items=request)
+            print(result)
+            topic = "data-unclassified"
+            create_topic_if_not_exists(topic)  # <-- kiểm tra & tạo topic
+        
+            data = request.get("data", [])
+            for item in data:
+                producer.produce(
+                    topic=topic,
+                    value=json.dumps(item).encode('utf-8'),
+                    callback=delivery_report
+                )
 
-        producer.flush()
-        return {"status": "OK", "detail": f"Sent to topic '{topic}'"}
+            producer.flush()
+            return {"status": "OK", "detail": f"Sent to topic '{topic}'"}
+        else:
+            print("Không có dữ liệu truyền vào")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    # return {"message": "Upsert task đã gửi đi"}
 
 
 def delivery_report(err, msg):
     if err is not None:
-        print(f"Failed to deliver message: {err}")
+        print(f"Gửi message thất bại: {err}")
     else:
-        print(f"Message delivered to {msg.topic()} [{msg.partition()}] at offset {msg.offset()}")
+        print(f"Đã gửi thành công message tới topic {msg.topic()} [{msg.partition()}] tại offset {msg.offset()}")
 
 # @router.post("/send")
 # def send_to_kafka(request: dict): #data: MessagePayload

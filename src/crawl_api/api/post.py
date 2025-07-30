@@ -27,14 +27,16 @@ def serialize_doc(doc: dict):
 @router.post("/insert-posts")
 async def insert_posts_classified(request: dict): # data là 1 list dict
     try:
-        await PostService.insert_posts(items=request)
+        result = await PostService.insert_posts(items=request)
+        print(result)
         topic = "data-classified"
         create_topic_if_not_exists(topic)
         data = request.get("data", [])
         for item in data:
             producer.produce(
                 topic=topic,
-                value=json.dumps(item).encode('utf-8')
+                value=json.dumps(item).encode('utf-8'),
+                callback=delivery_report
             )
 
         producer.flush()
@@ -54,7 +56,8 @@ async def insert_posts_unclassified(request: dict):
         for item in data:
             producer.produce(
                 topic=topic,
-                value=json.dumps(item).encode('utf-8')
+                value=json.dumps(item).encode('utf-8'),
+                callback=delivery_report
             )
 
         producer.flush()
@@ -64,17 +67,23 @@ async def insert_posts_unclassified(request: dict):
     # return {"message": "Upsert task đã gửi đi"}
 
 
-@router.post("/send")
-def send_to_kafka(request: dict): #data: MessagePayload
-    topic = "data-classified"
-    create_topic_if_not_exists(topic)  # <-- kiểm tra & tạo topic
-    
-    data = request.get("data", [])
-    for item in data:
-        producer.produce(
-            topic=topic,
-            value=json.dumps(item).encode('utf-8')
-        )
+def delivery_report(err, msg):
+    if err is not None:
+        print(f"Failed to deliver message: {err}")
+    else:
+        print(f"Message delivered to {msg.topic()} [{msg.partition()}] at offset {msg.offset()}")
 
-    producer.flush()
-    return {"status": "OK", "detail": f"Sent to topic '{topic}'"}
+# @router.post("/send")
+# def send_to_kafka(request: dict): #data: MessagePayload
+#     topic = "data-classified"
+#     create_topic_if_not_exists(topic)  # <-- kiểm tra & tạo topic
+    
+#     data = request.get("data", [])
+#     for item in data:
+#         producer.produce(
+#             topic=topic,
+#             value=json.dumps(item).encode('utf-8')
+#         )
+
+#     producer.flush()
+#     return {"status": "OK", "detail": f"Sent to topic '{topic}'"}
